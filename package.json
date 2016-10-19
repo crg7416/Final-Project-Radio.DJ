@@ -1,0 +1,29 @@
+{
+  "name": "radiodj",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./scr/app.js",
+  "scripts": {
+    "start": "node ./src/app.js",
+    "pretest": "eslint ./src --fix",
+    "test": "echo \"Tests complete\""
+  },
+  "author": "Christian Gileski",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^3.6.0",
+    "eslint-config-airbnb": "^12.0.0",
+    "eslint-plugin-import": "^1.16.0",
+    "eslint-plugin-jsx-a11y": "^2.2.2",
+    "eslint-plugin-react": "^6.3.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "compression": "^1.6.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "express-handlebars": "^3.0.0",
+    "serve-favicon": "^2.3.0",
+    "socket.io": "^1.5.0"
+  }
+}
