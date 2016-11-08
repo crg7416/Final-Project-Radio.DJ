@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const expressHandlebars = require('express-handlebars');
 const socketio = require('socket.io');
+const http = require('http');
 
 const router = require('./router.js');
 
@@ -15,6 +16,9 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 // create an app
 const app = express();
+
+// The server will have to store room names, and I will do that here
+const roomNames = [];
 
 // redirects any URL requests with /assets to the client folder
 app.use('/assets', express.static(path.resolve(`${__dirname}/../client/`)));
@@ -42,14 +46,15 @@ app.use(favicon(`${__dirname}/../client/favicon.png`));
 // call and use the cookie parser library
 app.use(cookieParser());
 
-// Create a socket for the app using app.server
-const io = socketio(app.server);
+// Create a socket for the app by creating an http server via our express app
+var server = http.createServer(app);
+const io = socketio.listen(server);
 
 // pass our app to our router object to map the routes
 router(app);
 
 // Usual "listening" message
-app.listen(port, (err) => {
+server.listen(port, (err) => {
   if (err) {
     throw err;
   }
@@ -58,14 +63,31 @@ app.listen(port, (err) => {
 
 // Fire up the socket
 io.on('connection', (socket) => {
-// Hooked up socketio for use when SC gives me an API key & I can import the proper npm library
+  //Default room
+  socket.join('homeRoom');
 
-  // socket.join('room1');
-//  socket.on('functionName', (data) => {
-//    io.sockets.in('room1').emit('functionName', data);
-//  });
+  socket.on('connectToRoom', (data) => {
+    // Joins a room based on the input when you create or join a room
+    // Then adds that room name to an array of rooms
+    socket.leave('homeRoom');
+    socket.join(`${data}`);
+    //Adds the string of the room name to the array at the next index available
+    roomNames.push(`${data}`);
+  });
+  
+  socket.on('joinRoom', (data) => {
+    // Joins a room based on the input when you create or join a room
+    // Then adds that room name to an array of rooms
+    socket.leave('homeRoom');
+    socket.join(`${data}`);
+  });
+
+  socket.on('getRoomList', () => {
+    // Sends back the array of current rooms to just the user that asks for it
+    io.to(socket.id).emit('returnRoomList', roomNames);
+  });
 
   socket.on('disconnect', () => {
-    socket.leave('room1');
+    socket.leave('homeRoom');
   });
 });

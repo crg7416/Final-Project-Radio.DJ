@@ -6,8 +6,8 @@ const router = (app) => {
   // pass the express app in
 
   // when someone goes to the /djroom or djhost page, call controllers.djroom
-  app.get('/djroom', controllers.djroom);
-  app.get('/djhost', controllers.djhost);
+  app.get('/guest', controllers.guest);
+  app.get('/host', controllers.host);
 
   // no extension brings users to the homepage
   app.get('/', controllers.index);

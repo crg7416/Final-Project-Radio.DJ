@@ -2,12 +2,75 @@
 <html lang="en">
 <head>
   <title>{{title}}</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    "use strict";
+    
+    let socket;
+    let sessionid;
+    let roomName;
+    
+    const init = () => {
+        socket = io.connect();
+      
+        //Hooks up the "send" button
+        const create = document.getElementById('createRoom');
+        create.addEventListener('click', createRoom);
+        const join = document.getElementById('joinRoom');
+        join.addEventListener('click', getRoomList);
+      
+        //When the socket connects successfully
+        socket.on('connect', function () {
+            //When the user hits send, the server emits this function call
+            socket.on('returnRoomList', returnRoomList);
+        });    
+    };
+    
+    const createRoom = () => {
+      roomName = window.prompt('Please enter the name of your room', '');
+      if(roomName != null){
+        socket.emit('connectToRoom', roomName);
+        window.location.href = `/host?room=${roomName}`;
+      }
+    };
+    
+    const getRoomList = () => {
+      //Sends the sessionid so socketio can emit the list of rooms to just this user
+      socket.emit('getRoomList');
+    };
+    
+    const returnRoomList = (data) => {
+      var ul = document.getElementById('roomList');
+      //Empties the array every time link is clicked
+      while (ul.hasChildNodes()) {   
+        ul.removeChild(ul.firstChild);
+      }
+      for(var i = 0; i < data.length; i++){
+        var li = document.createElement("li");
+        li.appendChild(document.createTextNode(data[i]));
+        li.setAttribute('id', data[i]) //Sets the id of the li equal to the room names
+        li.setAttribute('onclick', 'joinRoom(this.id);');
+        li.setAttribute('style', 'cursor: pointer;')
+        ul.appendChild(li);
+      }
+    };
+    
+    const joinRoom = (data) => {
+        roomName = data;
+        socket.emit('joinRoom', roomName);
+        window.location.href = `/guest?room=${roomName}`;
+    }
+     
+    window.onload = init;
+  </script>
 </head>
 <body>
     <h1>Welcome to {{pageName}}</h1>
     <p>{{currentName}}</p>
     <!-- links or URLs are always GET resources as they are getting (retrieving) a resource -->
-  <a href="/djroom">Join Room</a>
-  <a href="/djhost">Create Room</a>
+  <!--<a href="/djroom">Join Room</a> -->
+  <button id="joinRoom">Join Room</button>
+  <button id="createRoom">Create Room</button>
+  <ul id= "roomList"></ul>
 </body>
 </html>

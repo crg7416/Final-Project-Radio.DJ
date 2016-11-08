@@ -9,13 +9,18 @@ const hostIndex = (req, res) => {
 };
 
 // Renders the dj room if you choose to join, not create
-const djRoom = (req, res) => {
-  res.render('djroom');
+const guestFunc = (req, res) => {
+  var name = req.query.room;
+  res.render('djroom', {
+    pageName: name,
+  });
 };
 
 // renders the dj room with the features of a host
-const djHost = (req, res) => {
+const hostFunc = (req, res) => {
+  var name = req.query.room;
   res.render('djroom', {
+    pageName: name,
     hosting: true,
   });
 };
@@ -30,7 +35,7 @@ const djHost = (req, res) => {
 // export the relevant public controller functions
 module.exports = {
   index: hostIndex,
-  djroom: djRoom,
-  djhost: djHost,
+  guest: guestFunc,
+  host: hostFunc,
   //notFound: notFound,
 };
