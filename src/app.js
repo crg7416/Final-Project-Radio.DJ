@@ -74,6 +74,7 @@ io.on('connection', (socket) => {
     //Adds the string of the room name to the array at the next index available
     roomNames.push(`${data}`);
   });
+
   
   socket.on('joinRoom', (data) => {
     // Joins a room based on the input when you create or join a room
@@ -89,5 +90,12 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     socket.leave('homeRoom');
+  });
+  
+  socket.on('updateTrack', (data) => {
+    console.dir(data);
+    var roomName = data.roomName.substring(1);
+    socket.emit('getTracklist', data.trackList);
+    //socket.broadcast.to(`${roomName}`).emit('getTracklist', data.trackList);
   });
 });

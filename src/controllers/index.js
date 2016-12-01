@@ -12,7 +12,8 @@ const hostIndex = (req, res) => {
 const guestFunc = (req, res) => {
   var name = req.query.room;
   res.render('djroom', {
-    pageName: name,
+    roomName: name,
+    hosting: false,
   });
 };
 
@@ -20,7 +21,7 @@ const guestFunc = (req, res) => {
 const hostFunc = (req, res) => {
   var name = req.query.room;
   res.render('djroom', {
-    pageName: name,
+    roomName: name,
     hosting: true,
   });
 };

@@ -5,7 +5,7 @@ const controllers = require('./controllers');
 const router = (app) => {
   // pass the express app in
 
-  // when someone goes to the /djroom or djhost page, call controllers.djroom
+  // when someone goes to the
   app.get('/guest', controllers.guest);
   app.get('/host', controllers.host);
 

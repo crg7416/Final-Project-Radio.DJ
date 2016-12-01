@@ -2,16 +2,99 @@
 <html lang="en">
 <head>
   <title>{{title}}</title>
+  <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script> <!--Exposes Soundcloud Widget-->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+  "use strict";
+    
+  let socket;
+  let widget;
+  let tracklist = [];
+  let currentSong;
+  let options = [];
+    
+  const init = () => {
+    socket = io.connect();
+    //Create widget
+    widget = SC.Widget(document.getElementById('soundcloudWidget'));
+    
+    //widget.bind allows for attaching listeners to the widget based on events
+    widget.bind(SC.Widget.Events.READY, () => {
+      //This track loads by default, so I have to add it to the tracklist array
+      tracklist.push('https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo')
+      console.log('Ready...');
+    });
+    
+    //Calls trackFinished when the current track that's playing ends
+    widget.bind(SC.Widget.Events.FINISH, trackFinished);
+    
+    var updateTrack = document.getElementById('updateTrack');
+    
+    //Permanent list of options for the widget
+    options.show_artwork=true;
+    options.liking=false;
+    options.sharing=false;
+    options.auto_play=true;
+    options.single_active=false;
+    
+    if({{hosting}}){ //Don't call this if not the host
+      updateTrack.addEventListener('click', updateTracklist);
+    }
+    
+    socket.on('connect', function () {
+      //Call functions
+      socket.on('getTracklist', getTracklist);
+    });      
+  };
+    
+  const updateTracklist = () => { 
+    var songURL = document.getElementById('songURL').value;
+    var checkURL = scValidate(songURL);
+    
+    if(checkURL != false && currentSong != songURL){
+      console.log(`${songURL} added to queue`);
+    
+      //Add song to the array and set currentSong equal to the URl to avoid immediate repeat plays
+      tracklist.push(songURL);
+      currentSong = songURL;
+      
+      socket.emit('updateTrack', {roomName: `${{{roomName}}}`, trackList: tracklist });
+    }
+  };
+    
+  const trackFinished = () => {
+    //Remove the song that just finished from the array and play the next one
+    tracklist.shift();
+    widget.load(tracklist[0], options);
+  };
+    
+  const getTracklist = (data) => {
+    //Get the updating tracklist from the server, which gets it from the host of the room
+    tracklist = data;
+    console.dir(tracklist);
+  };
+  
+  //I couldn't find an online Regex that I could use as a validator
+  const scValidate = (url) => {
+     return url.includes('soundcloud.com');
+  };
+
+  window.onload = init;
+  </script>
 </head>
 <body>
     <h1>Filler stuff </h1>
-    <!-- links or URLs are always GET resources as they are getting (retrieving) a resource -->
     <a href="/">Home</a>
+  <iframe id="soundcloudWidget"
+      src="http://w.soundcloud.com/player/?url=https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo&show_artwork=false&liking=false&sharing=false&auto_play=true&single_active=false"
+      width="420" height="120" frameborder="no"></iframe>
   
   {{#if hosting}}
   <p>If you can see this, congratulations, that means you have hosting priviliges!!!</p>
+  <button id="updateTrack">Queue Track</button>
+  <input id="songURL" type="text" size="31" name="queueSong" value="Enter a Soundcloud URL to queue a track">
   {{/if}}
   
-  <p>The name of this room is {{pageName}}</p>
+  <p>The name of this room is {{roomName}}</p>
 </body>
 </html>
