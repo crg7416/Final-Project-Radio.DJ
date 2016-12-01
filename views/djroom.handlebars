@@ -43,6 +43,10 @@
     
     socket.on('connect', function () {
       //Call functions
+      console.log('Socket connected');
+      if(!{{hosting}}){
+        socket.emit('joinRoom', `{{roomName}}`);
+      }
       socket.on('getTracklist', getTracklist);
     });      
   };
@@ -58,7 +62,7 @@
       tracklist.push(songURL);
       currentSong = songURL;
       
-      socket.emit('updateTrack', {roomName: `${{{roomName}}}`, trackList: tracklist });
+      socket.emit('updateTrack', {roomName: `{{roomName}}`, trackList: tracklist });
     }
   };
     
@@ -86,7 +90,7 @@
     <h1>Filler stuff </h1>
     <a href="/">Home</a>
   <iframe id="soundcloudWidget"
-      src="http://w.soundcloud.com/player/?url=https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo&show_artwork=false&liking=false&sharing=false&auto_play=true&single_active=false"
+      src="http://w.soundcloud.com/player/?url=https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo&show_artwork=true&liking=false&sharing=false&auto_play=true&single_active=false"
       width="420" height="120" frameborder="no"></iframe>
   
   {{#if hosting}}

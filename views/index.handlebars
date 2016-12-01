@@ -56,9 +56,7 @@
     };
     
     const joinRoom = (data) => {
-        roomName = data;
-        socket.emit('joinRoom', roomName);
-        window.location.href = `/guest?room=${roomName}`;
+        window.location.href = `/guest?room=${data}`;
     }
      
     window.onload = init;
