@@ -71,7 +71,6 @@ io.on('connection', (socket) => {
     // Then adds that room name to an array of rooms
     socket.leave('homeRoom');
     socket.join(data);
-    console.log(`Joining room ${data}`);
     //Adds the string of the room name to the array at the next index available
     roomNames.push(data);
   });
@@ -81,7 +80,6 @@ io.on('connection', (socket) => {
     // Then adds that room name to an array of rooms
     socket.leave('homeRoom');
     socket.join(data);
-    console.log(`Joining room ${data}`);
   });
 
   socket.on('getRoomList', () => {
@@ -94,8 +92,6 @@ io.on('connection', (socket) => {
   });
   
   socket.on('updateTrack', (data) => {
-    console.dir(data);
-    //socket.broadcast.emit('getTracklist', data.trackList);
     socket.broadcast.to(data.roomName).emit('getTracklist', data.trackList);
   });
 });
