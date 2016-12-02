@@ -74,8 +74,6 @@ io.on('connection', (socket) => {
     // Then adds that room name to an array of rooms
     socket.leave('homeRoom');
     socket.join(data);
-    //Add the default track to the room's track array upon creating the room;
-    trackList[data].push('https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo');
     //Adds the string of the room name to the array at the next index available
     roomNames.push(data);
   });
