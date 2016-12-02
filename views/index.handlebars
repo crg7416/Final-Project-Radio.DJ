@@ -9,6 +9,7 @@
     let socket;
     let sessionid;
     let roomName;
+    let rooms = [];
     
     const init = () => {
         socket = io.connect();
@@ -21,17 +22,32 @@
       
         //When the socket connects successfully
         socket.on('connect', function () {
-            //When the user hits send, the server emits this function call
-            socket.on('returnRoomList', returnRoomList);
+          socket.on('returnRoomList', returnRoomList);
+          socket.on('getRoomArray', getRoomArray);
+          socket.emit('getRoomArray'); //Get the list of rooms first thing
+          console.dir(rooms);
         });    
     };
     
     const createRoom = () => {
+      //I know having the same event fire twice seems redundant
+      //but it's the only thing that seems to work
+      socket.emit('getRoomArray');
       roomName = window.prompt('Please enter the name of your room', '');
+      socket.emit('getRoomArray');
+      //Cannot have duplicate room name
+      if(rooms.indexOf(roomName) > -1){
+        roomName = window.prompt('Room name must be unique!', '');
+      }
       if(roomName != null){
         socket.emit('connectToRoom', roomName);
         window.location.href = `/host?room=${roomName}`;
       }
+    };
+    
+    const getRoomArray = (data) => {
+      //Save list of rooms returned;
+      rooms = data;
     };
     
     const getRoomList = () => {

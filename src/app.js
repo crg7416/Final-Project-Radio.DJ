@@ -72,10 +72,11 @@ io.on('connection', (socket) => {
   socket.on('connectToRoom', (data) => {
     // Joins a room based on the input when you create or join a room
     // Then adds that room name to an array of rooms
-    socket.leave('homeRoom');
-    socket.join(data);
     //Adds the string of the room name to the array at the next index available
     roomNames.push(data);
+    socket.leave('homeRoom');
+    socket.join(data);
+    //Give the user the array of rooms to begin with
   });
 
   socket.on('joinRoom', (data) => {
@@ -91,11 +92,12 @@ io.on('connection', (socket) => {
     // Sends back the array of current rooms to just the user that asks for it
     io.to(socket.id).emit('returnRoomList', roomNames);
   });
-
-  socket.on('disconnect', () => {
-    socket.leave('homeRoom');
-  });
   
+  socket.on('getRoomArray', () => {
+    // Sends back the array of current rooms to just the user that asks for it
+    io.to(socket.id).emit('getRoomArray', roomNames);
+  });
+
   socket.on('updateTrack', (data) => {
     //Updates the current tracklist of the room
     trackList[data.roomName] = data.trackList;
@@ -105,6 +107,15 @@ io.on('connection', (socket) => {
   socket.on('trackEnded', (data) => {
     //Updates the current tracklist of the room but doesn't send anything back
     trackList[data.roomName] = data;
+  });
+  
+  socket.on('removeRoom', (data) => {
+    //Removes the room name from the list of rooms
+    roomNames.splice(roomNames.indexOf(data), 1);
+  });
+  
+  socket.on('disconnect', () => {
+    socket.leave('homeRoom');
   });
   
 });

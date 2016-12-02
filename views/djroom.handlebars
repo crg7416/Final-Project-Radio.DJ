@@ -45,7 +45,7 @@
       updateTrack.addEventListener('click', updateTracklist);
     }
     
-    socket.on('connect', function () {
+    socket.on('connect', () => {
       //Call guest functions to join room and get current tracklist, then play track
       if(!{{hosting}}){
         socket.emit('joinRoom', `{{roomName}}`); 
@@ -53,7 +53,7 @@
               
         socket.on('getTracklist', getTracklist);
         socket.on('getFirstTrack', getFirstTrack);
-    });      
+    }); 
   };
     
   const updateTracklist = () => { 
@@ -109,6 +109,13 @@
   };
 
   window.onload = init;
+  
+  //If the page becomes "unloaded" by the host, call this and remove the room from the list of rooms
+  window.onbeforeunload = () => {
+    if({{hosting}}){
+      socket.emit('removeRoom', `{{roomName}}`);
+    }
+  };
   </script>
 </head>
 <body>
