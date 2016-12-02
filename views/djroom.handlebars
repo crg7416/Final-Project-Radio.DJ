@@ -14,6 +14,7 @@
   let options = [];
     
   const init = () => {
+
     socket = io.connect();
     //Create widget
     widget = SC.Widget(document.getElementById('soundcloudWidget'));
@@ -22,7 +23,7 @@
     widget.bind(SC.Widget.Events.READY, () => {
       //This track loads by default, so I have to add it to the tracklist array
       if({{hosting}}){
-        tracklist.push('https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo')
+        tracklist.push('https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo');
         console.log('Ready...');
       }
     });
