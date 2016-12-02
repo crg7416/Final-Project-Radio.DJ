@@ -96,12 +96,16 @@
     
   const getFirstTrack = (data) => {
       tracklist = data;
+      console.dir(tracklist);
       widget.load(tracklist[0], options);
   };
   
   //I couldn't find any soundcloud url validator so this is the best I can really do
   const scValidate = (url) => {
-     return url.includes('soundcloud.com');
+    if(url.includes('https') && url.includes('soundcloud.com')){
+      return true;
+    }
+     return false;
   };
 
   window.onload = init;
