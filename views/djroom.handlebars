@@ -12,6 +12,7 @@
   let tracklist = [];
   let currentSong;
   let options = [];
+  let firstJoined = true;
     
   const init = () => {
     socket = io.connect();
@@ -21,14 +22,17 @@
     //widget.bind allows for attaching listeners to the widget based on events
     widget.bind(SC.Widget.Events.READY, () => {
       //This track loads by default, so I have to add it to the tracklist array
-      tracklist.push('https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo')
-      console.log('Ready...');
+      if({{hosting}}){
+        tracklist.push('https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo')
+        console.log('Ready...');
+      }
     });
     
     //Calls trackFinished when the current track that's playing ends
     widget.bind(SC.Widget.Events.FINISH, trackFinished);
     
     var updateTrack = document.getElementById('updateTrack');
+    var trackQueue = document.getElementById('trackQueue'); 
     
     //Permanent list of options for the widget
     options.show_artwork=true;
@@ -42,12 +46,12 @@
     }
     
     socket.on('connect', function () {
-      //Call functions
-      console.log('Socket connected');
+      //Call guest functions to join room and get current tracklist, then play track
       if(!{{hosting}}){
-        socket.emit('joinRoom', `{{roomName}}`);
+        socket.emit('joinRoom', `{{roomName}}`); 
       }
-      socket.on('getTracklist', getTracklist);
+              
+        socket.on('getTracklist', getTracklist);
     });      
   };
     
@@ -61,8 +65,11 @@
       //Add song to the array and set currentSong equal to the URl to avoid immediate repeat plays
       tracklist.push(songURL);
       currentSong = songURL;
-      
+      trackQueue.innerHTML = `${songURL} added to queue!`;
       socket.emit('updateTrack', {roomName: `{{roomName}}`, trackList: tracklist });
+    }
+    else{
+      trackQueue.innerHTML = 'Invalid URL entered!';
     }
   };
     
@@ -75,6 +82,13 @@
   const getTracklist = (data) => {
     //Get the updating tracklist from the server, which gets it from the host of the room
     tracklist = data;
+    
+    //Play the first track when you first join, but afterwards it will autoplay the next track
+    if(firstJoined){
+      widget.load(tracklist[0], options);
+    }
+    console.dir(tracklist);
+    firstJoined = false;
   };
   
   //I couldn't find an online Regex that I could use as a validator
@@ -97,6 +111,8 @@
   <button id="updateTrack">Queue Track</button>
   <input id="songURL" type="text" size="31" name="queueSong" value="Enter a Soundcloud URL to queue a track">
   {{/if}}
+  <br>
+  <p id='trackQueue'></p>
   
   <p>The name of this room is {{roomName}}</p>
 </body>
