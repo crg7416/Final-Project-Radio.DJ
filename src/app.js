@@ -83,7 +83,7 @@ io.on('connection', (socket) => {
     // Then adds that room name to an array of rooms
     socket.leave('homeRoom');
     socket.join(data);
-    io.to(socket.id).emit('getTracklist', trackList[data]);
+    io.to(socket.id).emit('getFirstTrack', trackList[data]);
     
   });
 
@@ -99,7 +99,12 @@ io.on('connection', (socket) => {
   socket.on('updateTrack', (data) => {
     //Updates the current tracklist of the room
     trackList[data.roomName] = data.trackList;
-    socket.broadcast.to(data.roomName).emit('getTracklist', data.trackList);
+    socket.broadcast.to(data.roomName).emit('getTracklist', data.track);
+  });
+  
+  socket.on('trackEnded', (data) => {
+    //Updates the current tracklist of the room but doesn't send anything back
+    trackList[data.roomName] = data;
   });
   
 });

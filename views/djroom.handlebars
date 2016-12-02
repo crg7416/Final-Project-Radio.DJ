@@ -12,7 +12,6 @@
   let tracklist = [];
   let currentSong;
   let options = [];
-  let firstJoined = true;
     
   const init = () => {
     socket = io.connect();
@@ -52,6 +51,7 @@
       }
               
         socket.on('getTracklist', getTracklist);
+        socket.on('getFirstTrack', getFirstTrack);
     });      
   };
     
@@ -66,7 +66,7 @@
       tracklist.push(songURL);
       currentSong = songURL;
       trackQueue.innerHTML = `${songURL} added to queue!`;
-      socket.emit('updateTrack', {roomName: `{{roomName}}`, trackList: tracklist });
+      socket.emit('updateTrack', {roomName: `{{roomName}}`, trackList: tracklist, track: songURL });
     }
     else{
       trackQueue.innerHTML = 'Invalid URL entered!';
@@ -77,21 +77,29 @@
     //Remove the song that just finished from the array and play the next one
     tracklist.shift();
     widget.load(tracklist[0], options);
+    //Update the tracklist server-side, but only if you're hosting
+    if({{hosting}}){
+      socket.emit('trackEnded', tracklist);
+    }
   };
     
   const getTracklist = (data) => {
     //Get the updating tracklist from the server, which gets it from the host of the room
-    tracklist = data;
+    tracklist.push(data);
     
-    //Play the first track when you first join, but afterwards it will autoplay the next track
-    if(firstJoined){
+    //If the guest finishes his queue before the host, fire up the new track as soon as it comes in
+    if(tracklist.length == 1){
       widget.load(tracklist[0], options);
     }
     console.dir(tracklist);
-    firstJoined = false;
+  };
+    
+  const getFirstTrack = (data) => {
+      tracklist = data;
+      widget.load(tracklist[0], options);
   };
   
-  //I couldn't find an online Regex that I could use as a validator
+  //I couldn't find any soundcloud url validator so this is the best I can really do
   const scValidate = (url) => {
      return url.includes('soundcloud.com');
   };
