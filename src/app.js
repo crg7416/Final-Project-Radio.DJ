@@ -20,7 +20,7 @@ const app = express();
 // The server will have to store room names, and I will do that here
 const roomNames = [];
 
-//The server also has to store tracklists for each room for when new users join
+// The server also has to store tracklists for each room for when new users join
 const trackList = [];
 
 // redirects any URL requests with /assets to the client folder
@@ -50,7 +50,7 @@ app.use(favicon(`${__dirname}/../client/favicon.png`));
 app.use(cookieParser());
 
 // Create a socket for the app by creating an http server via our express app
-var server = http.createServer(app);
+const server = http.createServer(app);
 const io = socketio.listen(server);
 
 // pass our app to our router object to map the routes
@@ -66,17 +66,17 @@ server.listen(port, (err) => {
 
 // Fire up the socket
 io.on('connection', (socket) => {
-  //Default room
+  // Default room
   socket.join('homeRoom');
 
   socket.on('connectToRoom', (data) => {
     // Joins a room based on the input when you create or join a room
     // Then adds that room name to an array of rooms
-    //Adds the string of the room name to the array at the next index available
+    // Adds the string of the room name to the array at the next index available
     roomNames.push(data);
     socket.leave('homeRoom');
     socket.join(data);
-    //Give the user the array of rooms to begin with
+    // Give the user the array of rooms to begin with
   });
 
   socket.on('joinRoom', (data) => {
@@ -85,37 +85,35 @@ io.on('connection', (socket) => {
     socket.leave('homeRoom');
     socket.join(data);
     io.to(socket.id).emit('getFirstTrack', trackList[data]);
-    
   });
 
   socket.on('getRoomList', () => {
     // Sends back the array of current rooms to just the user that asks for it
     io.to(socket.id).emit('returnRoomList', roomNames);
   });
-  
+
   socket.on('getRoomArray', () => {
     // Sends back the array of current rooms to just the user that asks for it
     io.to(socket.id).emit('getRoomArray', roomNames);
   });
 
   socket.on('updateTrack', (data) => {
-    //Updates the current tracklist of the room
+    // Updates the current tracklist of the room
     trackList[data.roomName] = data.trackList;
     socket.broadcast.to(data.roomName).emit('getTracklist', data.track);
   });
-  
+
   socket.on('trackEnded', (data) => {
-    //Updates the current tracklist of the room but doesn't send anything back
+    // Updates the current tracklist of the room but doesn't send anything back
     trackList[data.roomName] = data;
   });
-  
+
   socket.on('removeRoom', (data) => {
-    //Removes the room name from the list of rooms
+    // Removes the room name from the list of rooms
     roomNames.splice(roomNames.indexOf(data), 1);
   });
-  
+
   socket.on('disconnect', () => {
     socket.leave('homeRoom');
   });
-  
 });

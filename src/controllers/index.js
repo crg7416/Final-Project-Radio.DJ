@@ -3,14 +3,14 @@
 const hostIndex = (req, res) => {
   res.render('index', {
     currentName: 'This is the homepage',
-    title: 'Home',
+    title: 'Radio.DJ',
     pageName: 'Home Page',
   });
 };
 
 // Renders the dj room if you choose to join, not create
 const guestFunc = (req, res) => {
-  var name = req.query.room;
+  const name = req.query.room;
   res.render('djroom', {
     roomName: name,
     hosting: false,
@@ -19,24 +19,16 @@ const guestFunc = (req, res) => {
 
 // renders the dj room with the features of a host
 const hostFunc = (req, res) => {
-  var name = req.query.room;
+  const name = req.query.room;
   res.render('djroom', {
     roomName: name,
     hosting: true,
   });
 };
 
-// 404 function, not currently implemented
-// const notFound = (req, res) => {
-//  res.status(404).render('notFound', {
-//    page: req.url,
-//  });
-// };
-
 // export the relevant public controller functions
 module.exports = {
   index: hostIndex,
   guest: guestFunc,
   host: hostFunc,
-  //notFound: notFound,
 };

@@ -2,6 +2,17 @@
 <html lang="en">
 <head>
   <title>{{title}}</title>
+  <link rel="stylesheet" type="text/css" href="../assets/style.css">
+  <style>
+    /* This is separate from the css file because I strictly want only this page covered */
+    html { 
+	  background: url(../assets/microphone.png) no-repeat center center fixed; 
+	  -webkit-background-size: cover;
+	  -moz-background-size: cover;
+	  -o-background-size: cover;
+	  background-size: cover;
+	}
+  </style>
   <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script> <!--Exposes Soundcloud Widget-->
   <script src="/socket.io/socket.io.js"></script>
   <script>
@@ -12,6 +23,7 @@
   let tracklist = [];
   let currentSong;
   let options = [];
+  let playing = true;
     
   const init = () => {
 
@@ -31,20 +43,28 @@
     //Calls trackFinished when the current track that's playing ends
     widget.bind(SC.Widget.Events.FINISH, trackFinished);
     
-    var updateTrack = document.getElementById('updateTrack');
     var trackQueue = document.getElementById('trackQueue'); 
-    
+
     //Permanent list of options for the widget
     options.show_artwork=true;
-    options.liking=false;
+    options.liking=true;
     options.sharing=false;
     options.auto_play=true;
-    options.single_active=false;
+    options.single_active=true; //Change this to false to play multiple SC links simultaneously
     
     if({{hosting}}){ //Don't call this if not the host
-      updateTrack.addEventListener('click', updateTracklist);
+      const queue = document.getElementById('queue');
+      queue.addEventListener('click', updateTracklist);
+      queue.addEventListener('mouseover', queueFlip);
+      queue.addEventListener('mouseout', queueLeave);
     }
     
+    //Add functionality to buttons
+    const play = document.getElementById('play');
+    play.addEventListener('click', playSong);
+    const pause = document.getElementById('pause');
+    pause.addEventListener('click', pauseSong);
+
     socket.on('connect', () => {
       //Call guest functions to join room and get current tracklist, then play track
       if(!{{hosting}}){
@@ -107,6 +127,30 @@
     }
      return false;
   };
+    
+  const queueFlip = () => {
+    const qFlip = document.getElementById('queueFlip');
+    qFlip.style.opacity = 1;
+  };
+    
+  const queueLeave = () => {
+    const qFlip = document.getElementById('queueFlip');      
+    qFlip.style.opacity = 0;
+  };
+    
+  const playSong = () => {
+    if(!playing){
+      playing = true;
+      widget.play();
+    }
+  };
+    
+  const pauseSong = () => {
+    if(playing){
+      playing = false;
+      widget.pause();
+    }
+  };
 
   window.onload = init;
   
@@ -119,20 +163,27 @@
   </script>
 </head>
 <body>
-    <h1>Filler stuff </h1>
-    <a href="/">Home</a>
+    <a href="/"><img id="homeButton" src="../assets/logo.png" /></a>
+  <div class="roomOptions">
+  <p id="welcome">Welcome to {{roomName}}</p>
   <iframe id="soundcloudWidget"
       src="https://w.soundcloud.com/player/?url=https://soundcloud.com/majorlazer/major-lazer-dj-snake-lean-on-feat-mo&show_artwork=true&liking=false&sharing=false&auto_play=true&single_active=false"
-      width="420" height="120" frameborder="no"></iframe>
+      width="710" height="120" frameborder="no"></iframe>
   
   {{#if hosting}}
-  <p>If you can see this, congratulations, that means you have hosting priviliges!!!</p>
-  <button id="updateTrack">Queue Track</button>
-  <input id="songURL" type="text" size="31" name="queueSong" value="Enter a Soundcloud URL to queue a track">
+    <div class="cfQueue">
+      <img id="queueFlip" class = "bottom" src="../assets/queueFlip.png" />
+      <img id="queue" class = "top" src="../assets/queue.png" />
+    </div>
+  <input id="songURL" type="text" size=16 name="queueSong" value="Enter Soundcloud URL">
   {{/if}}
   <br>
   <p id='trackQueue'></p>
-  
-  <p>The name of this room is {{roomName}}</p>
+  <div id='buttons'>
+    <img id="play" class = "top" src="../assets/play.png" />
+    <img id="pause" class = "top" src="../assets/pause.png" />
+  </div>
+
+  </div>
 </body>
 </html>

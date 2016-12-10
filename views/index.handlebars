@@ -3,6 +3,17 @@
 <head>
   <title>{{title}}</title>
   <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" type="text/css" href="../assets/style.css">
+  <style>
+    /* This is separate from the css file because I strictly want only this page covered */
+    html { 
+	  background: url(../assets/background.png) no-repeat center center fixed; 
+	  -webkit-background-size: cover;
+	  -moz-background-size: cover;
+	  -o-background-size: cover;
+	  background-size: cover;
+	}
+  </style>
   <script>
     "use strict";
     
@@ -16,32 +27,37 @@
       
         //Hooks up the "send" button
         const create = document.getElementById('createRoom');
-        create.addEventListener('click', createRoom);
+        create.addEventListener('click', openModal);
+        create.addEventListener('mouseover', createFlip);
+        create.addEventListener('mouseout', createLeave);
         const join = document.getElementById('joinRoom');
         join.addEventListener('click', getRoomList);
-      
+        join.addEventListener('mouseover', joinFlip);
+        join.addEventListener('mouseout', joinLeave);
+    
         //When the socket connects successfully
         socket.on('connect', function () {
           socket.on('returnRoomList', returnRoomList);
           socket.on('getRoomArray', getRoomArray);
           socket.emit('getRoomArray'); //Get the list of rooms first thing
-          console.dir(rooms);
         });    
     };
     
     const createRoom = () => {
-      //I know having the same event fire twice seems redundant
-      //but it's the only thing that seems to work
-      socket.emit('getRoomArray');
-      roomName = window.prompt('Please enter the name of your room', '');
-      socket.emit('getRoomArray');
+      roomName = document.getElementById('createInput');
+      console.log(roomName.value);
+      var unique = true;
       //Cannot have duplicate room name
-      if(rooms.indexOf(roomName) > -1){
-        roomName = window.prompt('Room name must be unique!', '');
+      if(rooms.indexOf(roomName.value) > -1){
+        window.alert('Roomname must be unique!');
+        unique = false;
       }
-      if(roomName != null){
-        socket.emit('connectToRoom', roomName);
-        window.location.href = `/host?room=${roomName}`;
+      if(roomName.value.length > 22){
+        window.alert('Roomname must be 22 characters or less!');
+      }
+      if(roomName.value != null&& roomName.value.length < 23 && unique){
+        socket.emit('connectToRoom', roomName.value);
+        window.location.href = `/host?room=${roomName.value}`;
       }
     };
     
@@ -56,35 +72,134 @@
     };
     
     const returnRoomList = (data) => {
+      const joinModal = document.getElementById('joinModal');
+      joinModal.style.display = 'block';
+      
+      const span = document.getElementsByClassName('close')[1];
+      span.addEventListener('click', () => {
+        joinModal.style.display = 'none';
+      });
+      
+      window.onclick = (event) => {
+        if (event.target == joinModal) {
+          joinModal.style.display = "none";
+        }
+      };
+      
+      
       var ul = document.getElementById('roomList');
+
       //Empties the array every time link is clicked
       while (ul.hasChildNodes()) {   
         ul.removeChild(ul.firstChild);
       }
+      
+      //If it's empty, tell the user
+      if(data.length == 0){
+        var li = document.createElement("li");
+        li.appendChild(document.createTextNode("No available rooms!"));
+        li.setAttribute('class', 'emptyList');
+        ul.appendChild(li);
+      }
+      
       for(var i = 0; i < data.length; i++){
         var li = document.createElement("li");
         li.appendChild(document.createTextNode(data[i]));
-        li.setAttribute('id', data[i]) //Sets the id of the li equal to the room names
-        li.setAttribute('onclick', 'joinRoom(this.id);');
-        li.setAttribute('style', 'cursor: pointer;')
+        li.setAttribute('class', 'listElement');
+        li.setAttribute('id', data[i]); //Sets the id of the li equal to the room names
+        li.setAttribute('onclick', 'joinLink(this.id)');
+        li.setAttribute('style', 'cursor: pointer;');
         ul.appendChild(li);
       }
     };
     
-    const joinRoom = (data) => {
+    const joinLink = (data) => {
         window.location.href = `/guest?room=${data}`;
-    }
+    };
+    
+    const createFlip = () => {
+      const cFlip = document.getElementById('createFlip');
+      cFlip.style.opacity = 1;
+    };
+    
+    const joinFlip = () => {
+      const jFlip = document.getElementById('joinFlip');
+      jFlip.style.opacity = 1;
+    };
+    
+    const createLeave = () => {
+      const cFlip = document.getElementById('createFlip');
+      cFlip.style.opacity = 0;
+    };
+    
+    const joinLeave = () => {
+      const jFlip = document.getElementById('joinFlip');
+      jFlip.style.opacity = 0;
+    };
+    
+    const openModal = () => {
+      socket.emit('getRoomArray');
+      const createModal = document.getElementById('createModal');
+      createModal.style.display = 'block';
+      
+      const createButton = document.getElementById('createButton');
+      createButton.addEventListener('click', createRoom);
+      
+      const span = document.getElementsByClassName('close')[0];
+      span.addEventListener('click', () => {
+        createModal.style.display = 'none';
+      });
+      
+      window.onclick = (event) => {
+        if (event.target == createModal) {
+          createModal.style.display = "none";
+        }
+      };
+    };
      
     window.onload = init;
   </script>
 </head>
 <body>
-    <h1>Welcome to {{pageName}}</h1>
-    <p>{{currentName}}</p>
-    <!-- links or URLs are always GET resources as they are getting (retrieving) a resource -->
-  <!--<a href="/djroom">Join Room</a> -->
-  <button id="joinRoom">Join Room</button>
-  <button id="createRoom">Create Room</button>
-  <ul id= "roomList"></ul>
+  <div id="mainPage">
+    <img src="../assets/logo.png" />
+    
+    <div class="cf">
+      <img id="createFlip" class = "bottom" src="../assets/createFlip.png" />
+      <img id="createRoom" class = "top" src="../assets/create.png" />
+    </div>
+      
+    <br>
+    <br>
+
+    <div class="cf">
+      <img id="joinFlip" class = "bottom" src="../assets/joinFlip.png" />
+      <img id="joinRoom" class = "top" src="../assets/join.png" />
+    </div>
+  </div>
+  
+  <!-- The Modal -->
+<div id="createModal" class="modal">
+  <!-- Modal content -->
+  <div class="create-content">
+    <span class="close">x</span>
+    <div id = 'createOptions'>
+      <input id="createInput" type="text" size="25" name="createModal" value="Enter a room name">
+      <button id="createButton">Create Room</button>
+    </div>
+  </div>
+</div>
+  
+  <!-- The Modal -->
+<div id="joinModal" class="modal">
+  <!-- Modal content -->
+  <div class="join-content">
+    <span class="close">x</span>
+    <div id = 'joinOptions'>
+        <ul id= "roomList"></ul>
+    </div>
+  </div>
+</div>  
+
 </body>
 </html>

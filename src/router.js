@@ -11,9 +11,6 @@ const router = (app) => {
 
   // no extension brings users to the homepage
   app.get('/', controllers.index);
-
-  // When I eventually create a 404 page, I will use this to have to utilized
-  // app.get('/*', controllers.notFound);
 };
 
 // export the router function
